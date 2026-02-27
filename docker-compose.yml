@@ -1,0 +1,50 @@
+# Docker Compose — IBKR MCP server + IB Gateway
+#
+# Usage:
+#   docker compose up -d          # start both services
+#   docker compose logs -f mcp    # tail MCP logs
+#   docker compose down            # stop everything
+
+services:
+  # ── IB Gateway (headless) ────────────────────────────────
+  ib-gateway:
+    image: ghcr.io/gnzsnz/ib-gateway:stable
+    restart: unless-stopped
+    ports:
+      - "4002:4002"   # paper trading API port
+      - "4001:4001"   # live trading API port
+      - "5900:5900"   # VNC (optional, for debugging)
+    environment:
+      TWS_USERID: ${TWS_USERID:?Set TWS_USERID in .env}
+      TWS_PASSWORD: ${TWS_PASSWORD:?Set TWS_PASSWORD in .env}
+      TRADING_MODE: ${TRADING_MODE:-paper}
+      TWS_ACCEPT_INCOMING: "yes"
+      READ_ONLY_API: ${READ_ONLY_API:-no}
+      VNC_SERVER_PASSWORD: ${VNC_PASSWORD:-ibkr}
+      TWS_PORT: "4002"
+    volumes:
+      - ib-gateway-data:/root/Jts
+    healthcheck:
+      test: ["CMD-SHELL", "nc -z localhost 4002 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 60s
+
+  # ── MCP Server ───────────────────────────────────────────
+  mcp:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      ib-gateway:
+        condition: service_healthy
+    environment:
+      IB_HOST: ib-gateway
+      IB_PORT: "4002"
+      IB_CLIENT_ID: "0"
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+    # MCP uses stdio — stdin/stdout are the transport
+    stdin_open: true
+
+volumes:
+  ib-gateway-data:

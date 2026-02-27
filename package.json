@@ -1,0 +1,70 @@
+{
+  "name": "ibkr-mcp",
+  "version": "1.0.1",
+  "description": "MCP server for Interactive Brokers — market data, orders, account management, risk analytics, and more via TWS/IB Gateway.",
+  "type": "module",
+  "main": "dist/app.js",
+  "bin": {
+    "ibkr-mcp": "dist/app.js"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc && node scripts/build.mjs",
+    "build:bundle": "node scripts/build.mjs",
+    "build:bundle:min": "node scripts/build.mjs --minify",
+    "build:tsc": "tsc",
+    "start": "node dist/app.js",
+    "dev": "tsx src/app.ts",
+    "lint": "eslint src/",
+    "lint:fix": "eslint src/ --fix",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "typecheck": "tsc --noEmit",
+    "check": "tsc --noEmit && eslint src/"
+  },
+  "keywords": [
+    "ibkr",
+    "interactive-brokers",
+    "mcp",
+    "trading",
+    "market-data"
+  ],
+  "author": "Guramrit Dhillon",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/guramrit-dhillon/ibkr-mcp.git"
+  },
+  "homepage": "https://github.com/guramrit-dhillon/ibkr-mcp#readme",
+  "bugs": {
+    "url": "https://github.com/guramrit-dhillon/ibkr-mcp/issues"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.12.1",
+    "@stoqey/ib": "^1.5.3",
+    "uuid": "^11.1.0",
+    "zod": "^3.24.4"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^22.15.3",
+    "@types/uuid": "^10.0.0",
+    "@typescript-eslint/eslint-plugin": "^8.56.1",
+    "@typescript-eslint/parser": "^8.56.1",
+    "esbuild": "^0.27.3",
+    "eslint": "^10.0.2",
+    "globals": "^17.3.0",
+    "tsx": "^4.19.4",
+    "typescript": "^5.8.3",
+    "typescript-eslint": "^8.56.1",
+    "vitest": "^3.1.3"
+  }
+}
