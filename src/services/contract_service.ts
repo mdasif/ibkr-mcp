@@ -276,7 +276,13 @@ export async function optionChain(
     throw new AppError('VALIDATION_ERROR', 'Either underlyingSymbol or underlyingConId is required');
   }
 
-  const params = await secDefOptParams(conId, exchange, 'STK', underlyingSymbol ?? '');
+  // reqSecDefOptParams expects an empty string for exchange to search across
+  // all exchanges — passing a real exchange (e.g. 'SMART', which is only a
+  // valid *routing* destination, not a real exchange) silently narrows or
+  // empties the result set. The `exchange`/`currency` params above are only
+  // used to qualify the underlying contract; the option-chain lookup itself
+  // always searches all exchanges.
+  const params = await secDefOptParams(conId, '', 'STK', underlyingSymbol ?? '');
   return {
     underlyingConId: conId,
     exchange,

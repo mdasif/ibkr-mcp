@@ -1,7 +1,6 @@
 /**
  * Order tools — MCP tool registration for order management operations.
  */
-import { zodToJsonSchema } from 'zod-to-json-schema';
 import { withEnvelope } from '../middleware/error_mapping';
 import * as ordersService from '../services/orders_service';
 import {
@@ -10,15 +9,7 @@ import {
   ExerciseOptionsInput, BracketOrderInput, OCOOrderInput,
   OrderStatusStreamUnsubscribeInput,
 } from '../schemas/order_schemas';
-
-// Derive JSON Schema directly from the Zod validators so the advertised
-// MCP inputSchema can never drift from what handler.parse() actually accepts.
-// (Previously these were hand-written and had drifted badly — e.g. order_place
-// advertised flat fields like `conId`/`symbol`/`tif` while the real Zod schema
-// requires a nested `contract: {...}` object and a `timeInForce` field. Any
-// client following the advertised schema would always fail validation.)
-const toSchema = (zodSchema: Parameters<typeof zodToJsonSchema>[0]) =>
-  zodToJsonSchema(zodSchema, { target: 'jsonSchema7', $refStrategy: 'none' }) as Record<string, unknown>;
+import { toSchema } from './schema_utils';
 
 export const ORDER_TOOLS = [
   {

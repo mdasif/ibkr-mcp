@@ -30,5 +30,5 @@ export const HistoricalNewsInput = z.object({
   providerCodes: z.array(z.string()),
   startDateTime: z.string(),
   endDateTime: z.string(),
-  maxResults: z.number().default(100),
+  maxResults: z.number().min(1).max(1000).default(100),
 });

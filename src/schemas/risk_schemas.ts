@@ -66,3 +66,12 @@ export const CorrelationMatrixInput = z.object({
   period: z.string().default('3 M'),
   barSize: z.string().default('1 day'),
 });
+
+export const DividendsAndSplitsHistoryInput = z.object({
+  conIdOrSymbol: z.union([z.number().int().positive(), z.string().min(1)])
+    .describe('Contract ID or ticker symbol'),
+});
+
+export const CorporateActionsCalendarInput = z.object({
+  conIds: z.array(z.number().int().positive()).min(1).describe('Contract IDs to check'),
+});

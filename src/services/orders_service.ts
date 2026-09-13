@@ -429,7 +429,17 @@ export async function exerciseOptions(
 
   const acct = account ?? conn.defaultAccount;
   const ibContract = toIBContract(contract);
-  const action = exerciseAction === 'EXERCISE' ? 1 : 2;
+
+  // IB's exerciseOptions API expects 1=exercise, 2=lapse. This is a real-money,
+  // irreversible action on an options position — an unrecognized action string
+  // must never silently fall through to "lapse" (e.g. a typo like 'Exercise'
+  // or 'EXCERCISE' would otherwise forfeit an in-the-money option instead of
+  // exercising it).
+  const EXERCISE_ACTION_CODES: Record<'EXERCISE' | 'LAPSE', 1 | 2> = { EXERCISE: 1, LAPSE: 2 };
+  if (exerciseAction !== 'EXERCISE' && exerciseAction !== 'LAPSE') {
+    throw new AppError('VALIDATION_ERROR', `exerciseAction must be 'EXERCISE' or 'LAPSE', got '${exerciseAction}'`);
+  }
+  const action = EXERCISE_ACTION_CODES[exerciseAction];
 
   conn.api.exerciseOptions(
     conn.nextReqId(),
@@ -437,7 +447,7 @@ export async function exerciseOptions(
     action,
     exerciseQuantity,
     acct,
-    override ? 1 : 0,
+    override ? 1 : 0, // IB API override flag: 1 = override system's default exercise decision, 0 = use default
   );
 
   return { status: 'ExerciseSubmitted', contract: { symbol: contract.symbol }, exerciseAction, exerciseQuantity };

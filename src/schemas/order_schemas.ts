@@ -29,6 +29,17 @@ export const OrderPlaceInput = z.object({
   scaleInitLevelSize: z.number().optional(),
   scaleSubsLevelSize: z.number().optional(),
   scalePriceIncrement: z.number().optional(),
+}).superRefine((data, ctx) => {
+  // IB rejects LMT/STP_LMT orders with no limit price and STP/STP_LMT/TRAIL
+  // orders with no aux (stop/trail) price — but only after a round trip to
+  // the gateway. Catching it here gives a clear, immediate validation error
+  // instead of a confusing runtime rejection.
+  if ((data.orderType === 'LMT' || data.orderType === 'STP_LMT') && data.limitPrice == null) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['limitPrice'], message: `limitPrice is required for orderType '${data.orderType}'` });
+  }
+  if ((data.orderType === 'STP' || data.orderType === 'STP_LMT' || data.orderType === 'TRAIL') && data.auxPrice == null) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['auxPrice'], message: `auxPrice is required for orderType '${data.orderType}'` });
+  }
 });
 
 // ── order_modify ────────────────────────────────────────────

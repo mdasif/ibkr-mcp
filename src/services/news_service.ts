@@ -79,6 +79,7 @@ export async function newsHeadlines(
   providerCodes?: string[],
   startDateTime?: string,
   endDateTime?: string,
+  maxResults = 100,
 ): Promise<Record<string, unknown>[]> {
   const conn = getConnection();
   conn.ensureConnected();
@@ -126,7 +127,7 @@ export async function newsHeadlines(
       providerCodes?.join('+') ?? '',
       startDateTime ?? '',
       endDateTime ?? '',
-      100,
+      maxResults,
       [],
     );
   }));
@@ -164,7 +165,7 @@ export async function historicalNews(
   providerCodes: string[],
   startDateTime: string,
   endDateTime: string,
-  _maxResults = 100,
+  maxResults = 100,
 ): Promise<Record<string, unknown>[]> {
-  return newsHeadlines({ conId, symbol: '', secType: 'STK', exchange: 'SMART', currency: 'USD' }, providerCodes, startDateTime, endDateTime);
+  return newsHeadlines({ conId, symbol: '', secType: 'STK', exchange: 'SMART', currency: 'USD' }, providerCodes, startDateTime, endDateTime, maxResults);
 }
