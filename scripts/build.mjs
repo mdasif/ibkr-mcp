@@ -30,7 +30,15 @@ await build({
     '.md': 'text',
   },
   banner: {
-    // Fix __dirname / __filename for ESM bundles
+    // Fix __dirname / __filename for ESM bundles. Also load .env here,
+    // as the very first thing that runs in the bundle — before any
+    // bundled module's top-level code executes (esbuild flattens all
+    // modules into this single file in dependency order, and several
+    // services eagerly construct singletons — e.g. IBConnection reads
+    // getConfig() in its constructor — at module scope well before
+    // app.ts's own code runs later in the file). Loading .env any later
+    // (e.g. inside app.ts) is too late: those singletons already cached
+    // a config built from process.env defaults.
     js: `#!/usr/bin/env node
 import { createRequire as __createRequire } from 'module';
 import { fileURLToPath as __fileURLToPath } from 'url';
@@ -38,6 +46,11 @@ import { dirname as __dirname_ } from 'path';
 const require = __createRequire(import.meta.url);
 const __filename = __fileURLToPath(import.meta.url);
 const __dirname = __dirname_(__filename);
+try {
+  process.loadEnvFile();
+} catch {
+  // No .env file present — fall back to whatever is already in process.env.
+}
 `.trim(),
   },
   logLevel: 'info',

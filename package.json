@@ -51,7 +51,8 @@
     "@modelcontextprotocol/sdk": "^1.12.1",
     "@stoqey/ib": "^1.5.3",
     "uuid": "^11.1.0",
-    "zod": "^3.24.4"
+    "zod": "^3.24.4",
+    "zod-to-json-schema": "^3.25.2"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

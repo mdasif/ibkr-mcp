@@ -191,8 +191,51 @@ export class IBConnection {
       this._connectTime = new Date();
       this._reconnectAttempts = 0;
 
-      // Request managed accounts
-      this.ib.reqManagedAccts();
+      // Seed the local order/req ID counter from IB's own nextValidId, which
+      // IB Gateway sends automatically right after connect and tracks
+      // server-side across client restarts. Without this, restarting the
+      // MCP server process resets our local counter to 1 while the Gateway
+      // still remembers previously-used order IDs from this session/day,
+      // causing "Duplicate order id" rejections on the first order placed
+      // after a restart.
+      await new Promise<void>((resolve) => {
+        const idTimeout = setTimeout(() => {
+          this.ib.off(EventName.nextValidId, onNextValidId);
+          logger.warn('Timed out waiting for nextValidId after connect; using local counter default');
+          resolve();
+        }, 5000);
+        const onNextValidId = (orderId: number) => {
+          clearTimeout(idTimeout);
+          this.ib.off(EventName.nextValidId, onNextValidId);
+          if (orderId > this._nextReqId) {
+            this._nextReqId = orderId;
+          }
+          resolve();
+        };
+        this.ib.on(EventName.nextValidId, onNextValidId);
+      });
+
+      // Request managed accounts and wait for the response before returning,
+      // so callers immediately after connect() see a populated accounts list
+      // instead of racing the async managedAccounts event.
+      await new Promise<void>((resolve) => {
+        if (this._managedAccounts.length > 0) {
+          resolve();
+          return;
+        }
+        const acctTimeout = setTimeout(() => {
+          this.ib.off(EventName.managedAccounts, onAccts);
+          logger.warn('Timed out waiting for managed accounts after connect');
+          resolve();
+        }, 5000);
+        const onAccts = () => {
+          clearTimeout(acctTimeout);
+          this.ib.off(EventName.managedAccounts, onAccts);
+          resolve();
+        };
+        this.ib.on(EventName.managedAccounts, onAccts);
+        this.ib.reqManagedAccts();
+      });
 
       // Start heartbeat
       this._startHeartbeat();
