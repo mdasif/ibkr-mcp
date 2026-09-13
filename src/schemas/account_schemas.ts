@@ -2,6 +2,7 @@
  * Account schemas — summary, positions, PnL.
  */
 import { z } from 'zod';
+import { ContractSchema, OrderSideEnum } from './common';
 
 export const AccountSummaryInput = z.object({
   account: z.string().optional().describe('Account ID (defaults to configured account)'),
@@ -38,15 +39,9 @@ export const PnLPositionInput = z.object({
 });
 
 export const MarginRequirementsInput = z.object({
-  contract: z.object({
-    conId: z.number().optional(),
-    symbol: z.string(),
-    secType: z.string(),
-    exchange: z.string().default('SMART'),
-    currency: z.string().default('USD'),
-  }),
+  contract: ContractSchema,
   quantity: z.number().positive(),
-  side: z.enum(['BUY', 'SELL']),
+  side: OrderSideEnum,
 });
 
 export const BuyingPowerInput = z.object({

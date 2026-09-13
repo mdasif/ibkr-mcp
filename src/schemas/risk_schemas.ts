@@ -2,7 +2,7 @@
  * Risk/analytics schemas.
  */
 import { z } from 'zod';
-import { ContractSchema } from './common';
+import { ContractSchema, OrderSideEnum } from './common';
 
 export const OptionPriceCalculateInput = z.object({
   contract: ContractSchema,
@@ -38,7 +38,7 @@ export const StressTestInput = z.object({
 export const SimulateTradeImpactInput = z.object({
   contract: ContractSchema,
   quantity: z.number().positive(),
-  side: z.enum(['BUY', 'SELL']),
+  side: OrderSideEnum,
   account: z.string().optional(),
 });
 

@@ -24,15 +24,10 @@ export const ScannerCancelInput = z.object({
 
 export const ScannerPresetsListInput = z.object({});
 
-export const ScannerRunPresetInput = z.object({
-  preset: z.enum([
-    'top_gainers', 'top_losers', 'most_active', 'high_iv',
-    'unusual_volume', 'breakout_candidates', 'gap_up', 'gap_down',
-  ]).describe('Preset scanner name'),
-  numberOfRows: z.number().default(25),
-});
-
-// Built-in scanner preset definitions
+// Built-in scanner preset definitions — keys here are the single source of
+// truth for valid preset names. ScannerRunPresetInput derives its enum from
+// Object.keys() below instead of duplicating the list, so the two can never
+// drift out of sync.
 export const SCANNER_PRESETS: Record<string, { instrument: string; locationCode: string; scanCode: string; description: string }> = {
   top_gainers: { instrument: 'STK', locationCode: 'STK.US.MAJOR', scanCode: 'TOP_PERC_GAIN', description: 'Top percentage gainers in US major exchanges' },
   top_losers: { instrument: 'STK', locationCode: 'STK.US.MAJOR', scanCode: 'TOP_PERC_LOSE', description: 'Top percentage losers in US major exchanges' },
@@ -43,3 +38,10 @@ export const SCANNER_PRESETS: Record<string, { instrument: string; locationCode:
   gap_up: { instrument: 'STK', locationCode: 'STK.US.MAJOR', scanCode: 'TOP_OPEN_PERC_GAIN', description: 'Stocks gapping up at open' },
   gap_down: { instrument: 'STK', locationCode: 'STK.US.MAJOR', scanCode: 'TOP_OPEN_PERC_LOSE', description: 'Stocks gapping down at open' },
 };
+
+const SCANNER_PRESET_NAMES = Object.keys(SCANNER_PRESETS) as [string, ...string[]];
+
+export const ScannerRunPresetInput = z.object({
+  preset: z.enum(SCANNER_PRESET_NAMES).describe('Preset scanner name'),
+  numberOfRows: z.number().default(25),
+});

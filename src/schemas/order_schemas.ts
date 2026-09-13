@@ -82,7 +82,7 @@ export const ExecutionsListInput = z.object({
   symbol: z.string().optional(),
   secType: z.string().optional(),
   exchange: z.string().optional(),
-  side: z.enum(['BUY', 'SELL']).optional(),
+  side: OrderSideEnum.optional(),
 });
 
 // ── order_preview / order_what_if ───────────────────────────
